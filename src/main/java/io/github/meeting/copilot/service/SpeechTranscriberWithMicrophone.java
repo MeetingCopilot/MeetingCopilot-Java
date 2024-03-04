@@ -6,10 +6,12 @@ import com.alibaba.nls.client.protocol.NlsClient;
 import com.alibaba.nls.client.protocol.SampleRateEnum;
 import com.alibaba.nls.client.protocol.asr.SpeechTranscriber;
 import io.github.meeting.copilot.listener.RealTimeSpeechTranscriberListener;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.sound.sampled.*;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -45,8 +47,9 @@ public class SpeechTranscriberWithMicrophone {
         }
     }
 
+    @SneakyThrows
     public void process() {
-        SpeechTranscriber transcriber;
+        SpeechTranscriber transcriber = null;
 
         try {
             transcriber = new SpeechTranscriber(nlsClient, new RealTimeSpeechTranscriberListener());
@@ -69,8 +72,21 @@ public class SpeechTranscriberWithMicrophone {
             AudioFormat audioFormat = new AudioFormat(16000.0F, 16,
                     1, true, false);
 
+            Mixer.Info[] mixerInfos = AudioSystem.getMixerInfo();
+
+            Mixer.Info firstInfo = Arrays.stream(mixerInfos)
+                    .filter(info -> info.getName().equals("BlackHole 2ch"))
+                    .findFirst().orElse(null);
+
+            if (Objects.isNull(firstInfo)) {
+                log.error("No microphone found with the name 'BlackHole 2ch'");
+                transcriber.stop();
+                return;
+            }
+
+            Mixer mixer = AudioSystem.getMixer(firstInfo);
             DataLine.Info info = new DataLine.Info(TargetDataLine.class, audioFormat);
-            Line line = AudioSystem.getLine(info);
+            Line line = mixer.getLine(info);
             if (Objects.nonNull(line) && line instanceof TargetDataLine targetDataLine) {
                 targetDataLine.open(audioFormat);
                 targetDataLine.start();

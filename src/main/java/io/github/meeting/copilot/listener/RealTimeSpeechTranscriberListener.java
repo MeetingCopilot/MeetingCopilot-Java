@@ -2,7 +2,11 @@ package io.github.meeting.copilot.listener;
 
 import com.alibaba.nls.client.protocol.asr.SpeechTranscriberListener;
 import com.alibaba.nls.client.protocol.asr.SpeechTranscriberResponse;
+import io.github.meeting.copilot.service.GeminiProProcessService;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * @author HydroCarbon
@@ -10,6 +14,10 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class RealTimeSpeechTranscriberListener extends SpeechTranscriberListener {
+
+    private final GeminiProProcessService geminiProProcessService = new GeminiProProcessService();
+
+    ExecutorService executorService = Executors.newVirtualThreadPerTaskExecutor();
 
     @Override
     public void onTranscriberStart(SpeechTranscriberResponse speechTranscriberResponse) {
@@ -30,10 +38,10 @@ public class RealTimeSpeechTranscriberListener extends SpeechTranscriberListener
     @Override
     public void onSentenceEnd(SpeechTranscriberResponse speechTranscriberResponse) {
         String endText = speechTranscriberResponse.getTransSentenceText();
-        log.info("Sentence end: {}", endText);
-
         // get the final result
 
+        executorService.submit(() -> geminiProProcessService.process(endText));
+        //geminiProProcessService.process(endText);
     }
 
     @Override

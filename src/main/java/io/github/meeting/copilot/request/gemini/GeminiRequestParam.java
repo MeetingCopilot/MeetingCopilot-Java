@@ -24,4 +24,6 @@ public class GeminiRequestParam {
     private List<SafetySetting> safetySettings;
 
     private GenerationConfig generationConfig;
+
+
 }

@@ -5,6 +5,8 @@ import io.github.meeting.copilot.service.GeminiProProcessService;
 import io.github.meeting.copilot.service.SpeechTranscriberWithMicrophone;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.sound.sampled.*;
+
 /**
  * @author HydroCarbon
  * @since 2024-03-01
@@ -12,17 +14,17 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Main {
     public static void main(String[] args) {
-//        NlsConfigInfo info = NlsConfigInfo.ofDefault();
+        NlsConfigInfo info = NlsConfigInfo.ofDefault();
+
+        SpeechTranscriberWithMicrophone transcriber = new SpeechTranscriberWithMicrophone(info.accessKeyId(),
+                info.accessKey(),
+                info.accessSecret(),
+                info.url());
+        transcriber.process();
+        transcriber.shutdown();
+
+//        GeminiProProcessService geminiProProcessService = new GeminiProProcessService();
 //
-//        SpeechTranscriberWithMicrophone transcriber = new SpeechTranscriberWithMicrophone(info.accessKeyId(),
-//                info.accessKey(),
-//                info.accessSecret(),
-//                info.url());
-//        transcriber.process();
-//        transcriber.shutdown();
-
-        GeminiProProcessService geminiProProcessService = new GeminiProProcessService();
-
-        geminiProProcessService.process("Redis 集群模式和哨兵模式的区别是什么？");
+//        geminiProProcessService.process("Redis 集群模式和哨兵模式的区别是什么？");
     }
 }
